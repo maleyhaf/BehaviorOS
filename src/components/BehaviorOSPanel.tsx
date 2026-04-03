@@ -7,6 +7,7 @@ interface Props {
   adaptationLog: AdaptationEntry[]
   timeLeft: number
   hp: number
+  compact?: boolean  // mobile: horizontal strip instead of vertical panel
 }
 
 function Bar({ value, color }: { value: number; color: string }) {
@@ -15,17 +16,17 @@ function Bar({ value, color }: { value: number; color: string }) {
       <div style={{ flex: 1, height: 4, background: 'rgba(255,255,255,0.1)', borderRadius: 2 }}>
         <div style={{ width: `${Math.round(value * 100)}%`, height: '100%', background: color, borderRadius: 2, transition: 'width 0.6s ease' }} />
       </div>
-      <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)', minWidth: 28, textAlign: 'right' }}>
+      <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)', minWidth: 24, textAlign: 'right' }}>
         {Math.round(value * 100)}
       </span>
     </div>
   )
 }
 
-function label(value: number): string {
-  if (value > 0.7) return 'HIGH'
-  if (value > 0.4) return 'MED'
-  return 'LOW'
+function lbl(value: number) {
+  if (value > 0.7) return 'HI'
+  if (value > 0.4) return 'MD'
+  return 'LO'
 }
 
 function Row({ label, value }: { label: string; value: string }) {
@@ -37,7 +38,64 @@ function Row({ label, value }: { label: string; value: string }) {
   )
 }
 
-export function BehaviorOSPanel({ player, modifiers, adaptationLog, timeLeft, hp }: Props) {
+// ── Compact (mobile): horizontal strip of trait pills ──────────────────────
+function CompactPanel({ player, modifiers, adaptationLog, timeLeft, hp }: Omit<Props, 'compact'>) {
+  const hpPct = hp / MAX_HP
+  const hpColor = hpPct > 0.6 ? '#4ade80' : hpPct > 0.3 ? '#facc15' : '#f87171'
+  const lastEntry = adaptationLog[adaptationLog.length - 1]
+
+  const traits = [
+    { label: 'RISK', value: player.riskTolerance, color: '#f97316' },
+    { label: 'IMPL', value: player.impulsivity, color: '#a78bfa' },
+    { label: 'PAT', value: player.patience, color: '#38bdf8' },
+    { label: 'CON', value: player.consistency, color: '#4ade80' },
+  ]
+
+  return (
+    <div style={{
+      background: 'rgba(0,0,0,0.85)',
+      border: '1px solid rgba(255,255,255,0.08)',
+      borderRadius: 8,
+      padding: '10px 14px',
+      fontFamily: 'monospace',
+      width: '100%',
+      boxSizing: 'border-box',
+    }}>
+      {/* Trait row */}
+      <div style={{ display: 'flex', gap: 8, marginBottom: 8, flexWrap: 'wrap' }}>
+        {traits.map(t => (
+          <div key={t.label} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+            <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.3)' }}>{t.label}</span>
+            <span style={{ fontSize: 11, color: t.color, fontWeight: 'bold' }}>{lbl(t.value)}</span>
+          </div>
+        ))}
+        <div style={{ marginLeft: 'auto', display: 'flex', gap: 12, alignItems: 'center' }}>
+          <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)' }}>
+            DECOY <span style={{ color: 'rgba(255,255,255,0.6)' }}>{Math.round(modifiers.decoyProbability * 100)}%</span>
+          </span>
+          <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)' }}>
+            DRIFT <span style={{ color: 'rgba(255,255,255,0.6)' }}>{modifiers.driftSpeed > 0 ? `${Math.round(modifiers.driftSpeed)}` : '—'}</span>
+          </span>
+          <span style={{ fontSize: 12, color: hpColor, fontWeight: 'bold' }}>
+            {Math.floor(timeLeft / 60)}:{String(timeLeft % 60).padStart(2, '0')}
+          </span>
+        </div>
+      </div>
+
+      {/* Latest adaptation */}
+      {lastEntry && (
+        <div style={{ fontSize: 10, color: 'rgba(250,204,21,0.7)', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: 6 }}>
+          ↳ {lastEntry.description}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ── Full (desktop): vertical sidebar ──────────────────────────────────────
+export function BehaviorOSPanel({ player, modifiers, adaptationLog, timeLeft, hp, compact }: Props) {
+  if (compact) return <CompactPanel player={player} modifiers={modifiers} adaptationLog={adaptationLog} timeLeft={timeLeft} hp={hp} />
+
   const lastEntry = adaptationLog[adaptationLog.length - 1]
   const hpPct = hp / MAX_HP
   const hpColor = hpPct > 0.6 ? '#4ade80' : hpPct > 0.3 ? '#facc15' : '#f87171'
@@ -53,12 +111,12 @@ export function BehaviorOSPanel({ player, modifiers, adaptationLog, timeLeft, hp
       fontSize: 12,
       width: 220,
       userSelect: 'none',
+      flexShrink: 0,
     }}>
       <div style={{ color: '#4ade80', marginBottom: 12, fontSize: 11, letterSpacing: '0.08em' }}>
         SYSTEM STATUS
       </div>
 
-      {/* HP mini bar */}
       <div style={{ marginBottom: 12 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
           <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)' }}>INTEGRITY</span>
@@ -70,16 +128,16 @@ export function BehaviorOSPanel({ player, modifiers, adaptationLog, timeLeft, hp
       </div>
 
       <div style={{ marginBottom: 12 }}>
-        <Row label="RISK TENDENCY" value={label(player.riskTolerance)} />
+        <Row label="RISK TENDENCY" value={lbl(player.riskTolerance) === 'HI' ? 'HIGH' : lbl(player.riskTolerance) === 'MD' ? 'MED' : 'LOW'} />
         <Bar value={player.riskTolerance} color="#f97316" />
         <div style={{ height: 8 }} />
-        <Row label="IMPULSIVITY" value={label(player.impulsivity)} />
+        <Row label="IMPULSIVITY" value={lbl(player.impulsivity) === 'HI' ? 'HIGH' : lbl(player.impulsivity) === 'MD' ? 'MED' : 'LOW'} />
         <Bar value={player.impulsivity} color="#a78bfa" />
         <div style={{ height: 8 }} />
-        <Row label="PATIENCE" value={label(player.patience)} />
+        <Row label="PATIENCE" value={lbl(player.patience) === 'HI' ? 'HIGH' : lbl(player.patience) === 'MD' ? 'MED' : 'LOW'} />
         <Bar value={player.patience} color="#38bdf8" />
         <div style={{ height: 8 }} />
-        <Row label="CONSISTENCY" value={label(player.consistency)} />
+        <Row label="CONSISTENCY" value={lbl(player.consistency) === 'HI' ? 'HIGH' : lbl(player.consistency) === 'MD' ? 'MED' : 'LOW'} />
         <Bar value={player.consistency} color="#4ade80" />
       </div>
 
@@ -98,11 +156,8 @@ export function BehaviorOSPanel({ player, modifiers, adaptationLog, timeLeft, hp
         <div style={{
           background: 'rgba(250,204,21,0.08)',
           border: '1px solid rgba(250,204,21,0.2)',
-          borderRadius: 4,
-          padding: '6px 8px',
-          fontSize: 10,
-          color: 'rgba(250,204,21,0.8)',
-          marginBottom: 10,
+          borderRadius: 4, padding: '6px 8px',
+          fontSize: 10, color: 'rgba(250,204,21,0.8)', marginBottom: 10,
         }}>
           ↳ {lastEntry.description}
         </div>

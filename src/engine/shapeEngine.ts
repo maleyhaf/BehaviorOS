@@ -7,7 +7,7 @@ const BASE_GROWTH = 22
 // minimum radius for shapes
 const MIN_RADIUS = 10
 // maximum radius for shapes
-const MAX_RADIUS = 60
+const MAX_RADIUS = 100
 
 export const MAX_HP = 100
 const PERFECT_CLICK_THRESHOLD = 0.75  // size ratio to qualify for HP regen

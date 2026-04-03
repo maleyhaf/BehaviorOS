@@ -4,13 +4,16 @@ import type { Shape } from '../types'
 // canvas component for rendering game shapes
 interface Props {
   shapes: Shape[]
-  width: number
+  width: number          // internal canvas resolution
   height: number
+  displayW: number       // CSS display size (scaled)
+  displayH: number
+  scale: number          // displayW / width — used to map touch coords back
   onCanvasClick: (x: number, y: number) => void
 }
 
 // render shapes with dynamic coloring based on age
-export function GameCanvas({ shapes, width, height, onCanvasClick }: Props) {
+export function GameCanvas({ shapes, width, height, displayW, displayH, scale, onCanvasClick }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
   useEffect(() => {
@@ -81,10 +84,26 @@ export function GameCanvas({ shapes, width, height, onCanvasClick }: Props) {
     }
   }, [shapes, width, height])
 
+  // Shared coordinate extraction — divides by scale to get internal coords
+  function coordsFromEvent(clientX: number, clientY: number) {
+    const rect = canvasRef.current!.getBoundingClientRect()
+    return {
+      x: (clientX - rect.left) / scale,
+      y: (clientY - rect.top) / scale,
+    }
+  }
+
   // handle click position relative to canvas
   function handleClick(e: React.MouseEvent<HTMLCanvasElement>) {
     const rect = canvasRef.current!.getBoundingClientRect()
     onCanvasClick(e.clientX - rect.left, e.clientY - rect.top)
+  }
+
+  function handleTouch(e: React.TouchEvent<HTMLCanvasElement>) {
+    e.preventDefault() // stop scroll/zoom hijacking the tap
+    const touch = e.changedTouches[0]
+    const { x, y } = coordsFromEvent(touch.clientX, touch.clientY)
+    onCanvasClick(x, y)
   }
 
   return (
@@ -93,11 +112,15 @@ export function GameCanvas({ shapes, width, height, onCanvasClick }: Props) {
       width={width}
       height={height}
       onClick={handleClick}
+      onTouchEnd={handleTouch}
       style={{
         cursor: 'crosshair',
         display: 'block',
         background: '#050a10',
         borderRadius: 8,
+        width: displayW,
+        height: displayH,
+        touchAction: 'none', // prevent browser handling touch as scroll
       }}
     />
   )
