@@ -5,7 +5,7 @@ interface Props {
   player: PlayerState
   modifiers: GameModifiers
   adaptationLog: AdaptationEntry[]
-  timeLeft: number
+  timeElapsed: number
   hp: number
   compact?: boolean
 }
@@ -39,7 +39,7 @@ function Row({ label, value }: { label: string; value: string }) {
 }
 
 // ── Compact (mobile): fixed to bottom of screen ────────────────────────────
-function CompactPanel({ player, modifiers, adaptationLog, timeLeft, hp }: Omit<Props, 'compact'>) {
+function CompactPanel({ player, modifiers, adaptationLog, timeElapsed, hp }: Omit<Props, 'compact'>) {
   const hpPct = hp / MAX_HP
   const hpColor = hpPct > 0.6 ? '#4ade80' : hpPct > 0.3 ? '#facc15' : '#f87171'
   const lastEntry = adaptationLog[adaptationLog.length - 1]
@@ -84,7 +84,7 @@ function CompactPanel({ player, modifiers, adaptationLog, timeLeft, hp }: Omit<P
             </span>
           )}
           <span style={{ fontSize: 13, color: hpColor, fontWeight: 'bold' }}>
-            {Math.floor(timeLeft / 60)}:{String(timeLeft % 60).padStart(2, '0')}
+            {`${Math.floor((Math.floor(timeElapsed / 1000)) / 60)}m ${(Math.floor(timeElapsed / 1000)) % 60}s`}
           </span>
         </div>
       </div>
@@ -106,8 +106,8 @@ function CompactPanel({ player, modifiers, adaptationLog, timeLeft, hp }: Omit<P
 }
 
 // ── Full (desktop): vertical sidebar ──────────────────────────────────────
-export function BehaviorOSPanel({ player, modifiers, adaptationLog, timeLeft, hp, compact }: Props) {
-  if (compact) return <CompactPanel player={player} modifiers={modifiers} adaptationLog={adaptationLog} timeLeft={timeLeft} hp={hp} />
+export function BehaviorOSPanel({ player, modifiers, adaptationLog, timeElapsed, hp, compact }: Props) {
+  if (compact) return <CompactPanel player={player} modifiers={modifiers} adaptationLog={adaptationLog} timeElapsed={timeElapsed} hp={hp} />
 
   const lastEntry = adaptationLog[adaptationLog.length - 1]
   const hpPct = hp / MAX_HP
@@ -179,7 +179,7 @@ export function BehaviorOSPanel({ player, modifiers, adaptationLog, timeLeft, hp
 
       <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: 8, textAlign: 'center' }}>
         <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: 10 }}>SESSION </span>
-        <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: 10 }}>{Math.floor(timeLeft / 60)}:{String(timeLeft % 60).padStart(2, '0')}</span>
+        <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: 10 }}>{`${Math.floor((Math.floor(timeElapsed / 1000)) / 60)}m ${(Math.floor(timeElapsed / 1000)) % 60}s`}</span>
       </div>
     </div>
   )

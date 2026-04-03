@@ -76,6 +76,20 @@ export function useGameEngine(canvasW: number, canvasH: number) {
     const newHp = Math.min(MAX_HP, Math.max(0, state.hp + hpDelta))
     const events = [...state.events, ...expiredEvents]
 
+    // perfomance check for the player to determine if difficulty should be increased
+    const recentEvents = state.events.slice(-15)
+
+    // hits misses calc
+    const hits = recentEvents.filter(e => !e.missed).length
+    const misses = recentEvents.filter(e => e.missed).length
+
+    const accuracy = hits / Math.max(1, hits + misses)
+
+    // simple performance metric
+    const performanceScore =
+      accuracy * 0.6 +
+      (state.player.consistency ?? 0) * 0.4
+
     // Death check
     if (newHp <= 0) {
       const newSessionCount = sessionsPlayed + 1
@@ -93,12 +107,47 @@ export function useGameEngine(canvasW: number, canvasH: number) {
 
     let modifiers = state.modifiers
     let adaptationLog = state.adaptationLog
+    // Adaptation check every 10 events to avoid excessive recalculations
     if (events.length > 0 && events.length % 10 === 0) {
       const adapted = adapt(player, state.modifiers, state.adaptationLog)
       modifiers = adapted.modifiers
       adaptationLog = adapted.log
     }
 
+    // pressure multiplier
+    let pressureMultiplier = 1
+
+    if (performanceScore > 0.75) {
+      // player doing well → ramp difficulty
+      pressureMultiplier += 0.15
+    } else if (performanceScore < 0.4) {
+      // player struggling → slight relief
+      pressureMultiplier = 0.9
+    }
+
+    // modified scaling
+    const timeSec = elapsed / 1000
+    const baseScale = 1 + Math.min(timeSec / 60, 2)
+
+    // combine both systems
+    const finalScale = baseScale * pressureMultiplier
+
+    console.log(`Performance: ${performanceScore.toFixed(2)}, Pressure Multiplier: ${pressureMultiplier.toFixed(2)}, Final Scale: ${finalScale.toFixed(2)}`)
+
+    modifiers = {
+      ...modifiers,
+
+      // multiplicative scaling (stable)
+      spawnRate: Math.min(DEFAULT_MODIFIERS.spawnRate * finalScale, 3),
+
+      growthSpeed: Math.min(DEFAULT_MODIFIERS.growthSpeed * finalScale, 2.5),
+
+      decaySpeed:
+        performanceScore < 0.4
+          ? Math.min(modifiers.decaySpeed + 0.02, 1.5)
+          : Math.max(DEFAULT_MODIFIERS.decaySpeed - timeSec * 0.005, 0.4),
+    }
+    
     setGameState(s => ({
       ...s,
       shapes,

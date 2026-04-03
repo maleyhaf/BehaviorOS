@@ -43,7 +43,10 @@ export default function App() {
 
   const { gameState, report, start, handleClick, sessionsPlayed, storedProfile } = useGameEngine(CANVAS_W, CANVAS_H)
   const { phase, score, hp, timeElapsed, shapes, player, modifiers, adaptationLog } = gameState
-  const timeLeft = Math.max(0, Math.ceil((100_000 - timeElapsed) / 1000))
+
+  // track the session duration
+  // not using since sessions last until HP depletes, not a fixed time limit
+  //const timeLeft = Math.max(0, Math.ceil((100_000 - timeElapsed) / 1000))
 
   if (phase === 'ended' && report) {
     return <EndScreen report={report} onRestart={start} sessionsPlayed={sessionsPlayed} />
@@ -69,7 +72,7 @@ export default function App() {
       {phase === 'idle' && (
         <div style={{ textAlign: 'center', color: 'white', maxWidth: 480, width: '100%' }}>
           <div style={{ fontSize: isMobile ? 22 : 28, fontWeight: 'bold', marginBottom: 8 }}>
-            ADAPTIVE SYSTEM
+            BehaviorOS
           </div>
 
           {storedProfile && (
@@ -164,7 +167,7 @@ export default function App() {
               player={player}
               modifiers={modifiers}
               adaptationLog={adaptationLog}
-              timeLeft={timeLeft}
+              timeElapsed={timeElapsed}
               hp={hp}
               compact={isMobile}
             />

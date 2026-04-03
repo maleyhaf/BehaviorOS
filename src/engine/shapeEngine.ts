@@ -5,7 +5,7 @@ const BASE_LIFETIME = 4000
 // base growth rate for shapes per second
 const BASE_GROWTH = 22
 // minimum radius for shapes
-const MIN_RADIUS = 10
+const MIN_RADIUS = 20
 // maximum radius for shapes
 const MAX_RADIUS = 100
 
