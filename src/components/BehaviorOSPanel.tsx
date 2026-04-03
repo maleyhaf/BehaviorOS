@@ -49,6 +49,7 @@ function CompactPanel({ player, modifiers, adaptationLog, timeElapsed, hp }: Omi
     { label: 'IMPL', value: player.impulsivity, color: '#a78bfa' },
     { label: 'PAT',  value: player.patience,    color: '#38bdf8' },
     { label: 'CON',  value: player.consistency, color: '#4ade80' },
+    { label: 'PERF', value: player.performance, color: '#facc15' },
   ]
 
   return (
@@ -153,6 +154,9 @@ export function BehaviorOSPanel({ player, modifiers, adaptationLog, timeElapsed,
         <div style={{ height: 8 }} />
         <Row label="CONSISTENCY" value={lvl(player.consistency)} />
         <Bar value={player.consistency} color="#4ade80" />
+        <div style={{ height: 8 }} />
+        <Row label="PERFORMANCE" value={lvl(player.performance)} />
+        <Bar value={player.performance} color="#facc15" />
       </div>
 
       <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: 10, marginBottom: 10 }}>

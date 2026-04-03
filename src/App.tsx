@@ -105,6 +105,7 @@ export default function App() {
               <span>IMPULSIVITY <span style={{ color: 'rgba(167,139,250,0.7)' }}>{Math.round(storedProfile.impulsivity * 100)}</span></span>
               <span>PATIENCE <span style={{ color: 'rgba(56,189,248,0.7)' }}>{Math.round(storedProfile.patience * 100)}</span></span>
               <span>CONSISTENCY <span style={{ color: 'rgba(74,222,128,0.7)' }}>{Math.round(storedProfile.consistency * 100)}</span></span>
+              <span>PERFORMANCE <span style={{ color: 'rgba(250,204,21,0.7)' }}>{Math.round(storedProfile.performance * 100)}</span></span>
             </div>
           )}
 

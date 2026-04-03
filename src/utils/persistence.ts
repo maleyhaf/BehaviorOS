@@ -8,6 +8,7 @@ export interface StoredProfile {
   impulsivity: number
   patience: number
   consistency: number
+  performance: number
   sessionsPlayed: number
   lastPlayed: number
 }
@@ -32,6 +33,7 @@ export function saveProfile(player: PlayerState, sessionsPlayed: number): void {
       impulsivity: player.impulsivity,
       patience: player.patience,
       consistency: player.consistency,
+      performance: player.performance,
       sessionsPlayed,
       lastPlayed: Date.now(),
     }

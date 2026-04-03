@@ -78,6 +78,7 @@ export function EndScreen({ report, onRestart, sessionsPlayed }: Props) {
             <StatRow label="Impulsivity" value={lvl(player.impulsivity)} />
             <StatRow label="Patience" value={lvl(player.patience)} />
             <StatRow label="Consistency" value={lvl(player.consistency)} />
+            <StatRow label="Performance" value={lvl(player.performance)} />
           </div>
           <div style={{ background: 'rgba(255,255,255,0.03)', borderRadius: 8, padding: 16 }}>
             <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', marginBottom: 8 }}>ACTIVITY</div>

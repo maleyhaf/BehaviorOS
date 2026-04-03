@@ -42,6 +42,7 @@ export interface PlayerState {
   impulsivity: number
   patience: number
   consistency: number
+  performance: number
   totalClicks: number
   totalMisses: number
   sessionStart: number

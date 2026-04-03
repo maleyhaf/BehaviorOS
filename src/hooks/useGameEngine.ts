@@ -76,6 +76,8 @@ export function useGameEngine(canvasW: number, canvasH: number) {
     const newHp = Math.min(MAX_HP, Math.max(0, state.hp + hpDelta))
     const events = [...state.events, ...expiredEvents]
 
+    /*
+    // MOVED INSIDE PLAYER MODEL  
     // perfomance check for the player to determine if difficulty should be increased
     const recentEvents = state.events.slice(-15)
 
@@ -86,9 +88,11 @@ export function useGameEngine(canvasW: number, canvasH: number) {
     const accuracy = hits / Math.max(1, hits + misses)
 
     // simple performance metric
+    
     const performanceScore =
       accuracy * 0.6 +
       (state.player.consistency ?? 0) * 0.4
+    */
 
     // Death check
     if (newHp <= 0) {
@@ -114,13 +118,15 @@ export function useGameEngine(canvasW: number, canvasH: number) {
       adaptationLog = adapted.log
     }
 
+    /*
+    // MOVED TO ADAPTIVE OPPONENT
     // pressure multiplier
     let pressureMultiplier = 1
 
-    if (performanceScore > 0.75) {
+    if (performanceScore > 0.55) {
       // player doing well → ramp difficulty
       pressureMultiplier += 0.25
-    } else if (performanceScore < 0.4) {
+    } else if (performanceScore < 0.3) {
       // player struggling → slight relief
       pressureMultiplier = 0.9
     }
@@ -138,15 +144,17 @@ export function useGameEngine(canvasW: number, canvasH: number) {
       ...modifiers,
 
       // multiplicative scaling (stable)
-      spawnRate: Math.min(DEFAULT_MODIFIERS.spawnRate * finalScale, 3),
+      spawnRate: Math.min(DEFAULT_MODIFIERS.spawnRate * finalScale, 5), 
 
-      growthSpeed: Math.min(DEFAULT_MODIFIERS.growthSpeed * finalScale, 2.5),
+      growthSpeed: Math.min(DEFAULT_MODIFIERS.growthSpeed * finalScale, 5),
 
       decaySpeed:
         performanceScore < 0.4
           ? Math.min(modifiers.decaySpeed + 0.02, 1.5)
           : Math.max(DEFAULT_MODIFIERS.decaySpeed - timeSec * 0.005, 0.4),
     }
+    */
+    console.log(`performance: ${player.performance.toFixed(2)}, spawnRate: ${modifiers.spawnRate.toFixed(2)}, growthSpeed: ${modifiers.growthSpeed.toFixed(2)}, decaySpeed: ${modifiers.decaySpeed.toFixed(2)}`)
 
     setGameState(s => ({
       ...s,

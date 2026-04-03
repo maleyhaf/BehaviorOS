@@ -5,6 +5,7 @@ const DEFAULT_STATE: PlayerState = {
   impulsivity: 0.5,
   patience: 0.5,
   consistency: 0.5,
+  performance: 0.5,
   totalClicks: 0,
   totalMisses: 0,
   sessionStart: Date.now(),
@@ -69,12 +70,19 @@ export function updatePlayerModel(
     consistency = lerp(current.consistency, 1 - normalizedStd, 0.2)
   }
 
+  // accuracy & consistency to get performance metric
+  const hits = clicks.length
+  const accuracy = hits / Math.max(1, hits + misses)
+  const performance = accuracy * 0.6 +
+      (consistency ?? 0) * 0.4
+
   // constrain all traits to 0-1 range
   return {
     riskTolerance: clamp(riskTolerance),
     impulsivity: clamp(impulsivity),
     patience: clamp(patience),
     consistency: clamp(consistency),
+    performance: clamp(performance),
     totalClicks: current.totalClicks + 1,
     totalMisses: misses,
     sessionStart: current.sessionStart,
