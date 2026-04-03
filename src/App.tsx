@@ -57,6 +57,7 @@ export default function App() {
       justifyContent: phase === 'playing' ? 'flex-start' : 'center',
       padding,
       paddingTop: phase === 'playing' ? padding : undefined,
+      paddingBottom: phase === 'playing' && isMobile ? 80 : padding,
       fontFamily: 'monospace',
       gap: 12,
       boxSizing: 'border-box',
