@@ -5,9 +5,6 @@ import { BehaviorOSPanel } from './components/BehaviorOSPanel'
 import { EndScreen } from './components/EndScreen'
 import { MAX_HP } from './engine/shapeEngine'
 
-// Fixed internal resolution — game logic always runs at this size
-const CANVAS_W = 900
-const CANVAS_H = 560
 
 function HpBar({ hp }: { hp: number }) {
   const pct = (hp / MAX_HP) * 100
@@ -27,8 +24,13 @@ function HpBar({ hp }: { hp: number }) {
 }
 
 export default function App() {
+
+  // computing the canvas display size responsive to window size is a bit tricky, so we do it in a hook
   const { width: winW, height: winH } = useWindowSize()
   const isMobile = winW < 768
+  const CANVAS_W = winW - (isMobile ? 0 : 248) // subtract side panel on desktop
+  const CANVAS_H = winH - 48 - (isMobile ? 80 : 0) // subtract header + bottom panel
+
 
   // On mobile: canvas takes full width minus padding, panel goes below
   // On desktop: canvas + side panel sit side by side
