@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import type { Shape } from '../types'
 
+// canvas component for rendering game shapes
 interface Props {
   shapes: Shape[]
   width: number
@@ -8,6 +9,7 @@ interface Props {
   onCanvasClick: (x: number, y: number) => void
 }
 
+// render shapes with dynamic coloring based on age
 export function GameCanvas({ shapes, width, height, onCanvasClick }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
@@ -17,8 +19,10 @@ export function GameCanvas({ shapes, width, height, onCanvasClick }: Props) {
     const ctx = canvas.getContext('2d')
     if (!ctx) return
 
+    // clear canvas
     ctx.clearRect(0, 0, width, height)
 
+    // draw each shape
     for (const shape of shapes) {
       const progress = shape.riskValue   // 0 = fresh, 1 = expiring
       const t = Date.now() / 1000
@@ -26,6 +30,7 @@ export function GameCanvas({ shapes, width, height, onCanvasClick }: Props) {
       ctx.save()
       ctx.globalAlpha = shape.opacity
 
+      // draw decoys with pulsing effect
       if (shape.isDecoy) {
         // Decoys: deeper blue color, pulsating to draw attention
         const hue = 200 - progress * 30
@@ -50,7 +55,7 @@ export function GameCanvas({ shapes, width, height, onCanvasClick }: Props) {
 
         ctx.setLineDash([])
       } else {
-        // Regular shapes: blue → teal, grow more saturated
+        // draw regular shapes with smooth color gradient
         const hue = 200 - progress * 30
         const saturation = 60 + progress * 20
         const lightness = 55 - progress * 10
@@ -62,7 +67,7 @@ export function GameCanvas({ shapes, width, height, onCanvasClick }: Props) {
         ctx.fill()
         ctx.stroke()
 
-        // Inner glow ring for large shapes
+        // add glow for large shapes to make them stand out
         if (shape.radius > 35) {
           ctx.strokeStyle = `hsla(${hue}, ${saturation}%, 80%, 0.3)`
           ctx.lineWidth = 0.5
@@ -76,6 +81,7 @@ export function GameCanvas({ shapes, width, height, onCanvasClick }: Props) {
     }
   }, [shapes, width, height])
 
+  // handle click position relative to canvas
   function handleClick(e: React.MouseEvent<HTMLCanvasElement>) {
     const rect = canvasRef.current!.getBoundingClientRect()
     onCanvasClick(e.clientX - rect.left, e.clientY - rect.top)

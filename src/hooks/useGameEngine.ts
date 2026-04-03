@@ -1,17 +1,16 @@
 import { useRef, useState, useCallback, useEffect } from 'react'
 import type { GameState, Shape, GameEvent, SessionReport } from '../types'
-import { spawnShape, updateShape, calcReward, hitTest } from '../engine/shapeEngine'
+import { spawnShape, updateShape, calcReward, calcClickHpDelta, calcMissHpDelta, hitTest, MAX_HP } from '../engine/shapeEngine'
 import { updatePlayerModel, DEFAULT_STATE } from '../engine/playerModel'
 import { adapt, DEFAULT_MODIFIERS, resetAdaptation } from '../engine/adaptiveOpponent'
 import { generateReport } from '../engine/reportGenerator'
 import { loadProfile, saveProfile, applyProfile } from '../utils/persistence'
 
-const SESSION_DURATION = 100_000
-
 function makeInitialState(): GameState {
   return {
     phase: 'idle',
     score: 0,
+    hp: MAX_HP,
     timeElapsed: 0,
     shapes: [],
     events: [],
@@ -43,16 +42,6 @@ export function useGameEngine(canvasW: number, canvasH: number) {
     lastTickRef.current = now
     const elapsed = Date.now() - state.player.sessionStart
 
-    if (elapsed >= SESSION_DURATION) {
-      const newSessionCount = sessionsPlayed + 1
-      const r = generateReport(state.events, state.player, state.adaptationLog, state.score, newSessionCount)
-      saveProfile(state.player, newSessionCount)
-      setSessionsPlayed(newSessionCount)
-      setReport(r)
-      setGameState(s => ({ ...s, phase: 'ended' }))
-      return
-    }
-
     let shapes = [...state.shapes]
     const spawnInterval = 1000 / state.modifiers.spawnRate
     if (
@@ -63,18 +52,40 @@ export function useGameEngine(canvasW: number, canvasH: number) {
       lastSpawnRef.current = now
     }
 
+    // Update shapes, collect miss events + HP deltas
     const expiredEvents: GameEvent[] = []
+    let hpDelta = 0
     shapes = shapes.reduce<Shape[]>((acc, s) => {
-      const updated = updateShape(s, dtMs)
+      const updated = updateShape(s, dtMs, canvasW, canvasH)
       if (!updated) {
-        expiredEvents.push({ shapeId: s.id, expiredAt: Date.now(), maxSizeReached: s.radius, missed: true })
+        const damage = calcMissHpDelta(s, state.modifiers)
+        hpDelta += damage
+        expiredEvents.push({
+          shapeId: s.id,
+          expiredAt: Date.now(),
+          maxSizeReached: s.radius,
+          hpDelta: damage,
+          missed: true,
+        })
         return acc
       }
       acc.push(updated)
       return acc
     }, [])
 
+    const newHp = Math.min(MAX_HP, Math.max(0, state.hp + hpDelta))
     const events = [...state.events, ...expiredEvents]
+
+    // Death check
+    if (newHp <= 0) {
+      const newSessionCount = sessionsPlayed + 1
+      const r = generateReport(events, state.player, state.adaptationLog, state.score, newSessionCount, elapsed, 'HP depleted')
+      saveProfile(state.player, newSessionCount)
+      setSessionsPlayed(newSessionCount)
+      setReport(r)
+      setGameState(s => ({ ...s, hp: 0, phase: 'ended' }))
+      return
+    }
 
     const player = events.length % 5 === 0
       ? updatePlayerModel(events, state.player)
@@ -82,7 +93,6 @@ export function useGameEngine(canvasW: number, canvasH: number) {
 
     let modifiers = state.modifiers
     let adaptationLog = state.adaptationLog
-
     if (events.length > 0 && events.length % 10 === 0) {
       const adapted = adapt(player, state.modifiers, state.adaptationLog)
       modifiers = adapted.modifiers
@@ -96,6 +106,7 @@ export function useGameEngine(canvasW: number, canvasH: number) {
       player,
       modifiers,
       adaptationLog,
+      hp: newHp,
       timeElapsed: elapsed,
     }))
 
@@ -106,9 +117,7 @@ export function useGameEngine(canvasW: number, canvasH: number) {
     resetAdaptation()
     const fresh = makeInitialState()
     const stored = loadProfile()
-    if (stored) {
-      fresh.player = applyProfile(fresh.player, stored)
-    }
+    if (stored) fresh.player = applyProfile(fresh.player, stored)
     setReport(null)
     setGameState({ ...fresh, phase: 'playing' })
     lastTickRef.current = 0
@@ -122,19 +131,24 @@ export function useGameEngine(canvasW: number, canvasH: number) {
 
       let hit = false
       let scoreChange = 0
+      let hpChange = 0
       const now = Date.now()
       const newEvents: GameEvent[] = []
+
       const shapes = s.shapes.filter(shape => {
         if (!hit && hitTest(shape, x, y)) {
           hit = true
           const reward = calcReward(shape, s.modifiers)
-          scoreChange = reward
+          const hpDelta = calcClickHpDelta(shape, s.modifiers)
+          scoreChange = shape.isDecoy ? reward : reward
+          hpChange = hpDelta
           newEvents.push({
             shapeId: shape.id,
             clickTime: now,
             reactionTime: now - shape.spawnTime,
             shapeSizeAtClick: shape.radius / shape.maxRadius,
             reward,
+            hpDelta,
             isDecoy: shape.isDecoy,
             missed: false,
           })
@@ -145,9 +159,22 @@ export function useGameEngine(canvasW: number, canvasH: number) {
 
       if (!hit) return s
 
+      const newHp = Math.min(MAX_HP, Math.max(0, s.hp + hpChange))
       const events = [...s.events, ...newEvents]
       const player = updatePlayerModel(events, s.player)
       const { modifiers, log: adaptationLog } = adapt(player, s.modifiers, s.adaptationLog)
+
+      // Check death from decoy click
+      if (newHp <= 0) {
+        const newSessionCount = sessionsPlayed + 1
+        const r = generateReport(events, player, adaptationLog, Math.max(0, s.score + scoreChange), newSessionCount, Date.now() - s.player.sessionStart, 'Clicked a decoy at critical HP')
+        saveProfile(player, newSessionCount)
+        setTimeout(() => {
+          setSessionsPlayed(newSessionCount)
+          setReport(r)
+        }, 0)
+        return { ...s, shapes, events, player, modifiers, adaptationLog, hp: 0, score: Math.max(0, s.score + scoreChange), phase: 'ended' }
+      }
 
       return {
         ...s,
@@ -156,10 +183,11 @@ export function useGameEngine(canvasW: number, canvasH: number) {
         player,
         modifiers,
         adaptationLog,
+        hp: newHp,
         score: Math.max(0, s.score + scoreChange),
       }
     })
-  }, [])
+  }, [sessionsPlayed])
 
   useEffect(() => () => cancelAnimationFrame(animRef.current), [])
 

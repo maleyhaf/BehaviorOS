@@ -7,10 +7,10 @@ export const DEFAULT_MODIFIERS: GameModifiers = {
   decoyProbability: 0.0,
   rewardScaling: 1.0,
   maxShapesOnScreen: 6,
+  driftSpeed: 0,
+  missDamageMultiplier: 1.0,
+  decoyDamageMultiplier: 1.0,
 }
-
-// ─── Adaptation rules ─────────────────────────────────────────────────────────
-// Each rule checks a condition on PlayerState and returns a modifier delta + log
 
 interface Rule {
   id: string
@@ -29,11 +29,25 @@ const RULES: Rule[] = [
     apply: m => ({ decoyProbability: Math.min(m.decoyProbability + 0.08, 0.4) }),
   },
   {
+    id: 'impulsive_decoy_damage',
+    condition: p => p.impulsivity > 0.8,
+    trigger: 'impulsivity > 0.80',
+    description: 'Decoy damage amplified — your reflexes are costing you more HP',
+    apply: m => ({ decoyDamageMultiplier: Math.min(m.decoyDamageMultiplier + 0.3, 2.0) }),
+  },
+  {
     id: 'patient_pressure',
     condition: p => p.patience > 0.7 && p.totalClicks > 5,
     trigger: 'patience > 0.70',
     description: 'Shapes expire faster — waiting is no longer safe',
     apply: m => ({ decaySpeed: Math.max(m.decaySpeed - 0.1, 0.5) }),
+  },
+  {
+    id: 'patient_miss_damage',
+    condition: p => p.patience > 0.75 && p.totalMisses > 3,
+    trigger: 'patience > 0.75 and misses > 3',
+    description: 'Miss damage increased — letting shapes expire now costs more HP',
+    apply: m => ({ missDamageMultiplier: Math.min(m.missDamageMultiplier + 0.4, 2.5) }),
   },
   {
     id: 'risk_traps',
@@ -63,9 +77,22 @@ const RULES: Rule[] = [
     description: 'Spawn rate increased — calm players face more decisions',
     apply: m => ({ spawnRate: Math.min(m.spawnRate + 0.2, 2.5) }),
   },
+  {
+    id: 'patience_drift',
+    condition: p => p.patience > 0.6 && p.totalClicks > 5,
+    trigger: 'patience > 0.60',
+    description: 'Shapes now drift — waiting means chasing a moving target',
+    apply: m => ({ driftSpeed: Math.min(m.driftSpeed + 35, 80) }),
+  },
+  {
+    id: 'consistency_drift_boost',
+    condition: p => p.consistency > 0.75 && p.totalClicks > 12,
+    trigger: 'consistency > 0.75',
+    description: 'Drift speed increased — your predictable timing meets unpredictable targets',
+    apply: m => ({ driftSpeed: Math.min(m.driftSpeed + 30, 130) }),
+  },
 ]
 
-// Track which rules have fired to avoid log spam
 const firedRules = new Set<string>()
 
 export function adapt(
@@ -80,7 +107,6 @@ export function adapt(
     if (rule.condition(player)) {
       const delta = rule.apply(modifiers)
       modifiers = { ...modifiers, ...delta }
-
       if (!firedRules.has(rule.id)) {
         firedRules.add(rule.id)
         newLog.push({

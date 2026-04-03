@@ -2,6 +2,8 @@ export interface Shape {
   id: string
   x: number
   y: number
+  vx: number
+  vy: number
   radius: number
   maxRadius: number
   growthRate: number
@@ -20,6 +22,7 @@ export interface ClickEvent {
   reactionTime: number
   shapeSizeAtClick: number
   reward: number
+  hpDelta: number       // positive = heal, negative = damage
   isDecoy: boolean
   missed: false
 }
@@ -28,6 +31,7 @@ export interface MissEvent {
   shapeId: string
   expiredAt: number
   maxSizeReached: number
+  hpDelta: number       // always negative
   missed: true
 }
 
@@ -50,6 +54,9 @@ export interface GameModifiers {
   decoyProbability: number
   rewardScaling: number
   maxShapesOnScreen: number
+  driftSpeed: number
+  missDamageMultiplier: number   // scales HP loss on miss (1 = normal)
+  decoyDamageMultiplier: number  // scales HP loss on decoy click
 }
 
 export interface AdaptationEntry {
@@ -64,6 +71,7 @@ export type GamePhase = 'idle' | 'playing' | 'ended'
 export interface GameState {
   phase: GamePhase
   score: number
+  hp: number
   timeElapsed: number
   shapes: Shape[]
   events: GameEvent[]
@@ -75,6 +83,8 @@ export interface GameState {
 export interface SessionReport {
   duration: number
   finalScore: number
+  maxHpLost: number
+  causeOfDeath: string | null   // null = survived
   player: PlayerState
   adaptationLog: AdaptationEntry[]
   behaviorSummary: string[]

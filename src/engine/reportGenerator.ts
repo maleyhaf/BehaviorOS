@@ -5,12 +5,17 @@ export function generateReport(
   player: PlayerState,
   adaptationLog: AdaptationEntry[],
   score: number,
-  sessionsPlayed: number
+  sessionsPlayed: number,
+  duration: number,
+  causeOfDeath: string | null = null
 ): SessionReport {
-  const duration = Date.now() - player.sessionStart
   const clicks = events.filter((e): e is ClickEvent => !e.missed)
 
   const behaviorSummary: string[] = []
+
+  if (causeOfDeath) {
+    behaviorSummary.push(`Session ended: ${causeOfDeath}.`)
+  }
 
   if (player.impulsivity > 0.65) {
     behaviorSummary.push('You prioritized speed over accuracy — clicking early and often.')
@@ -37,7 +42,7 @@ export function generateReport(
   }
 
   if (sessionsPlayed > 1) {
-    behaviorSummary.push(`This is session ${sessionsPlayed}. The system started with prior knowledge of your behavior.`)
+    behaviorSummary.push(`Session ${sessionsPlayed} complete. The system carried prior knowledge into this run.`)
   }
 
   let systemStatement: string
@@ -49,6 +54,8 @@ export function generateReport(
     systemStatement = 'The system detected your pattern. It adjusted accordingly.'
   } else if (player.consistency > 0.8) {
     systemStatement = 'Your behavior stabilized. The system responded with higher unpredictability.'
+  } else if (causeOfDeath) {
+    systemStatement = 'You ran out of HP. The system found your weakness.'
   } else {
     systemStatement = 'Your pattern was too inconsistent to fully model. The system is still learning.'
   }
@@ -58,7 +65,6 @@ export function generateReport(
     t: Math.round((e.clickTime - t0) / 1000),
     risk: e.shapeSizeAtClick,
   }))
-
   const reactionOverTime = clicks.map(e => ({
     t: Math.round((e.clickTime - t0) / 1000),
     rt: e.reactionTime,
@@ -67,6 +73,8 @@ export function generateReport(
   return {
     duration,
     finalScore: score,
+    maxHpLost: 0,
+    causeOfDeath,
     player,
     adaptationLog,
     behaviorSummary,

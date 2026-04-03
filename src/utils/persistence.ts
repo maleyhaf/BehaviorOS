@@ -1,5 +1,6 @@
 import type { PlayerState } from '../types'
 
+// local storage key for saving player profile
 const KEY = 'adaptive_system_profile'
 
 export interface StoredProfile {
@@ -11,16 +12,19 @@ export interface StoredProfile {
   lastPlayed: number
 }
 
+// retrieve saved player profile from storage
 export function loadProfile(): StoredProfile | null {
   try {
     const raw = localStorage.getItem(KEY)
     if (!raw) return null
     return JSON.parse(raw) as StoredProfile
   } catch {
+    // if storage fails, just return null silently
     return null
   }
 }
 
+// persist player behavior profile to storage
 export function saveProfile(player: PlayerState, sessionsPlayed: number): void {
   try {
     const profile: StoredProfile = {
@@ -33,16 +37,16 @@ export function saveProfile(player: PlayerState, sessionsPlayed: number): void {
     }
     localStorage.setItem(KEY, JSON.stringify(profile))
   } catch {
-    // storage unavailable, fail silently
+    // if storage fails, fail silently
   }
 }
 
+// delete stored profile from storage
 export function clearProfile(): void {
   localStorage.removeItem(KEY)
 }
 
-// Merge stored profile into a fresh PlayerState so the model
-// starts warm instead of at 0.5 defaults
+// apply saved profile to fresh player state to maintain traits across sessions
 export function applyProfile(base: PlayerState, profile: StoredProfile): PlayerState {
   return {
     ...base,
