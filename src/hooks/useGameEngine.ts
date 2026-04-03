@@ -119,7 +119,7 @@ export function useGameEngine(canvasW: number, canvasH: number) {
 
     if (performanceScore > 0.75) {
       // player doing well → ramp difficulty
-      pressureMultiplier += 0.15
+      pressureMultiplier += 0.25
     } else if (performanceScore < 0.4) {
       // player struggling → slight relief
       pressureMultiplier = 0.9
@@ -147,7 +147,7 @@ export function useGameEngine(canvasW: number, canvasH: number) {
           ? Math.min(modifiers.decaySpeed + 0.02, 1.5)
           : Math.max(DEFAULT_MODIFIERS.decaySpeed - timeSec * 0.005, 0.4),
     }
-    
+
     setGameState(s => ({
       ...s,
       shapes,
