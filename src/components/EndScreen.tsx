@@ -1,5 +1,5 @@
 import type { SessionReport } from '../types'
-import { MAX_HP } from '../engine/shapeEngine'
+//import { MAX_HP } from '../engine/shapeEngine'
 
 interface Props {
   report: SessionReport
@@ -44,7 +44,7 @@ export function EndScreen({ report, onRestart, sessionsPlayed }: Props) {
     }}>
       <div style={{ maxWidth: 640, width: '100%' }}>
 
-        // header
+        {/* Header */}
         <div style={{ textAlign: 'center', marginBottom: 32 }}>
           <div style={{ fontSize: 11, color: died ? '#f87171' : '#4ade80', letterSpacing: '0.12em', marginBottom: 8 }}>
             {died ? 'TERMINATED' : 'SESSION COMPLETE'}
@@ -60,7 +60,7 @@ export function EndScreen({ report, onRestart, sessionsPlayed }: Props) {
           </div>
         </div>
 
-        // behavioral summary
+        {/* Behavioral summary */}
         <div style={{ marginBottom: 24 }}>
           <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', marginBottom: 12, letterSpacing: '0.08em' }}>BEHAVIORAL ANALYSIS</div>
           {behaviorSummary.map((line, i) => (
@@ -70,7 +70,7 @@ export function EndScreen({ report, onRestart, sessionsPlayed }: Props) {
           ))}
         </div>
 
-        // stats grid
+        {/* Stats grid */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 24 }}>
           <div style={{ background: 'rgba(255,255,255,0.03)', borderRadius: 8, padding: 16 }}>
             <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', marginBottom: 8 }}>PLAYER PROFILE</div>
@@ -92,7 +92,7 @@ export function EndScreen({ report, onRestart, sessionsPlayed }: Props) {
           </div>
         </div>
 
-        // adaptation log
+        {/* Adaptation log */}
         {adaptationLog.length > 0 && (
           <div style={{ marginBottom: 24 }}>
             <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', marginBottom: 12, letterSpacing: '0.08em' }}>SYSTEM RESPONSE HISTORY</div>
@@ -110,7 +110,7 @@ export function EndScreen({ report, onRestart, sessionsPlayed }: Props) {
           </div>
         )}
 
-        // system statement
+        {/* System statement */}
         <div style={{ textAlign: 'center', padding: '24px 0', borderTop: '1px solid rgba(255,255,255,0.08)', marginBottom: 24 }}>
           <div style={{ fontSize: 16, color: 'rgba(255,255,255,0.9)', fontStyle: 'italic' }}>
             "{systemStatement}"
