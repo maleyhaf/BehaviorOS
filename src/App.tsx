@@ -41,7 +41,7 @@ export default function App() {
 
   const { displayW, displayH, scale } = fitCanvas(CANVAS_W, CANVAS_H, availableW, availableH)
 
-  const { gameState, report, start, handleClick, sessionsPlayed, storedProfile } = useGameEngine(CANVAS_W, CANVAS_H)
+  const { gameState, report, start, reset, handleClick, sessionsPlayed, storedProfile } = useGameEngine(CANVAS_W, CANVAS_H)
   const { phase, score, hp, timeElapsed, shapes, player, modifiers, adaptationLog } = gameState
 
   // track the session duration
@@ -49,7 +49,7 @@ export default function App() {
   //const timeLeft = Math.max(0, Math.ceil((100_000 - timeElapsed) / 1000))
 
   if (phase === 'ended' && report) {
-    return <EndScreen report={report} onRestart={start} sessionsPlayed={sessionsPlayed} />
+    return <EndScreen report={report} onRestart={start} onReset={reset} sessionsPlayed={sessionsPlayed} />
   }
 
   return (

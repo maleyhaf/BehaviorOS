@@ -4,7 +4,7 @@ import { spawnShape, updateShape, calcReward, calcClickHpDelta, calcMissHpDelta,
 import { updatePlayerModel, DEFAULT_STATE } from '../engine/playerModel'
 import { adapt, DEFAULT_MODIFIERS, resetAdaptation } from '../engine/adaptiveOpponent'
 import { generateReport } from '../engine/reportGenerator'
-import { loadProfile, saveProfile, applyProfile } from '../utils/persistence'
+import { loadProfile, saveProfile, applyProfile, clearProfile } from '../utils/persistence'
 
 function makeInitialState(): GameState {
   return {
@@ -182,6 +182,13 @@ export function useGameEngine(canvasW: number, canvasH: number) {
     animRef.current = requestAnimationFrame(tick)
   }, [tick])
 
+  // reset game profile
+  const reset = useCallback(() => {
+    resetAdaptation()
+    clearProfile()
+    setGameState(s => ({ ...s, phase: 'idle' }))
+  }, [tick])
+
   const handleClick = useCallback((x: number, y: number) => {
     setGameState(s => {
       if (s.phase !== 'playing') return s
@@ -248,5 +255,5 @@ export function useGameEngine(canvasW: number, canvasH: number) {
 
   useEffect(() => () => cancelAnimationFrame(animRef.current), [])
 
-  return { gameState, report, start, handleClick, sessionsPlayed, storedProfile: loadProfile() }
+  return { gameState, report, start, reset, handleClick, sessionsPlayed, storedProfile: loadProfile() }
 }

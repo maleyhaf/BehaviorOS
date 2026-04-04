@@ -5,6 +5,7 @@ import { useState } from 'react'
 interface Props {
   report: SessionReport
   onRestart: () => void
+  onReset: () => void
   sessionsPlayed: number
 }
 
@@ -28,13 +29,20 @@ function formatDuration(ms: number) {
   return `${Math.floor(s / 60)}m ${s % 60}s`
 }
 
-export function EndScreen({ report, onRestart, sessionsPlayed }: Props) {
+export function EndScreen({ report, onRestart, onReset, sessionsPlayed }: Props) {
   const { player, adaptationLog, behaviorSummary, systemStatement, finalScore, duration, causeOfDeath } = report
   const died = !!causeOfDeath
 
   // the log dropdown
   const [logExpanded, setLogExpanded] = useState(false)
   const PREVIEW_COUNT = 3
+
+  // handle reset confirmation
+  const handleReset = () => {
+    if (window.confirm('Are you sure you want to clear your profile? This will reset all your progress and adaptations.')) {
+      onReset()
+    }
+  }
 
   return (
     <div style={{
@@ -136,7 +144,7 @@ export function EndScreen({ report, onRestart, sessionsPlayed }: Props) {
           </div>
         </div>
 
-        <div style={{ textAlign: 'center' }}>
+        <div style={{ textAlign: 'center', justifyContent: 'center', display: 'flex', flexDirection: 'row', gap: 16 }}>
           <button onClick={onRestart} style={{
             background: 'transparent',
             border: `1px solid ${died ? 'rgba(248,113,113,0.3)' : 'rgba(255,255,255,0.2)'}`,
@@ -145,6 +153,15 @@ export function EndScreen({ report, onRestart, sessionsPlayed }: Props) {
             fontFamily: 'monospace', fontSize: 12, letterSpacing: '0.08em',
           }}>
             {died ? 'TRY AGAIN' : 'RUN AGAIN'}
+          </button>
+          <button onClick={handleReset} style={{
+            background: 'transparent',
+            border: `1px solid ${died ? 'rgba(248,113,113,0.3)' : 'rgba(255,255,255,0.2)'}`,
+            color: died ? '#f87171' : 'white',
+            padding: '10px 32px', borderRadius: 4, cursor: 'pointer',
+            fontFamily: 'monospace', fontSize: 12, letterSpacing: '0.08em',
+          }}>
+            {'CLEAR PROFILE'}
           </button>
         </div>
 
