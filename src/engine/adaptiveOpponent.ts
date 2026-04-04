@@ -133,15 +133,15 @@ export function adapt(
     if (rule.condition(player)) {
       const delta = rule.apply(modifiers, player)
       modifiers = { ...modifiers, ...delta }
-      if (!firedRules.has(rule.id)) {
-        firedRules.add(rule.id)
-        newLog.push({
-          timestamp: Date.now(),
-          trigger: rule.trigger,
-          change: delta,
-          description: rule.description,
-        })
-      }
+
+      firedRules.add(rule.id)
+      newLog.push({
+        timestamp: Date.now(),
+        trigger: rule.trigger,
+        change: delta,
+        description: rule.description,
+      })
+
     }
   }
 

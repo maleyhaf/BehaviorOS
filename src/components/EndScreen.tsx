@@ -1,5 +1,6 @@
 import type { SessionReport } from '../types'
 //import { MAX_HP } from '../engine/shapeEngine'
+import { useState } from 'react'
 
 interface Props {
   report: SessionReport
@@ -30,6 +31,10 @@ function formatDuration(ms: number) {
 export function EndScreen({ report, onRestart, sessionsPlayed }: Props) {
   const { player, adaptationLog, behaviorSummary, systemStatement, finalScore, duration, causeOfDeath } = report
   const died = !!causeOfDeath
+
+  // the log dropdown
+  const [logExpanded, setLogExpanded] = useState(false)
+  const PREVIEW_COUNT = 3
 
   return (
     <div style={{
@@ -97,7 +102,7 @@ export function EndScreen({ report, onRestart, sessionsPlayed }: Props) {
         {adaptationLog.length > 0 && (
           <div style={{ marginBottom: 24 }}>
             <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', marginBottom: 12, letterSpacing: '0.08em' }}>SYSTEM RESPONSE HISTORY</div>
-            {adaptationLog.map((entry, i) => (
+            {(logExpanded ? adaptationLog : adaptationLog.slice(0, PREVIEW_COUNT)).map((entry, i) => (
               <div key={i} style={{
                 padding: '8px 12px', marginBottom: 6,
                 background: 'rgba(250,204,21,0.06)',
@@ -108,6 +113,19 @@ export function EndScreen({ report, onRestart, sessionsPlayed }: Props) {
                 <div style={{ color: 'rgba(255,255,255,0.6)' }}>{entry.description}</div>
               </div>
             ))}
+            {adaptationLog.length > PREVIEW_COUNT && (
+              <button
+                onClick={() => setLogExpanded(e => !e)}
+                style={{
+                  background: 'transparent', border: 'none', cursor: 'pointer',
+                  color: 'rgba(255,255,255,0.35)', fontSize: 11, fontFamily: 'monospace',
+                  padding: '6px 0', display: 'flex', alignItems: 'center', gap: 6,
+                }}
+              >
+                <span style={{ display: 'inline-block', transition: 'transform 0.2s', transform: logExpanded ? 'rotate(180deg)' : 'none' }}>▼</span>
+                {logExpanded ? 'show less' : `${adaptationLog.length - PREVIEW_COUNT} more adaptation${adaptationLog.length - PREVIEW_COUNT !== 1 ? 's' : ''}`}
+              </button>
+            )}
           </div>
         )}
 

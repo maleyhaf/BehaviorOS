@@ -95,8 +95,8 @@ export function GameCanvas({ shapes, width, height, displayW, displayH, scale, o
 
   // handle click position relative to canvas
   function handleClick(e: React.MouseEvent<HTMLCanvasElement>) {
-    const rect = canvasRef.current!.getBoundingClientRect()
-    onCanvasClick(e.clientX - rect.left, e.clientY - rect.top)
+    const { x, y } = coordsFromEvent(e.clientX, e.clientY)
+    onCanvasClick(x, y)
   }
 
   function handleTouch(e: React.TouchEvent<HTMLCanvasElement>) {

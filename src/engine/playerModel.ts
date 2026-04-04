@@ -71,8 +71,9 @@ export function updatePlayerModel(
   }
 
   // accuracy & consistency to get performance metric
-  const hits = clicks.length
-  const accuracy = hits / Math.max(1, hits + misses)
+  const recenthits = clicks.length
+  const recentMisses = (events.filter(e => e.missed).slice(-WINDOW)).length
+  const accuracy = recenthits / Math.max(1, recenthits + recentMisses)
   const performance = accuracy * 0.6 +
       (consistency ?? 0) * 0.4
 
