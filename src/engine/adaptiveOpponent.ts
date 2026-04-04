@@ -118,11 +118,11 @@ const RULES: Rule[] = [
   },
   {
     id: 'performance_relief',
-    condition: p => p.performance < 0.43 && p.totalMisses > 5,
-    trigger: 'performance < 0.43 and misses > 5',
+    condition: p => p.performance < 0.43 && p.totalMisses > 7,
+    trigger: 'performance < 0.43 and misses > 7',
     description: 'Difficulty relief — you struggle, so the system is easing up',
     apply: (m, _p) => ({
-      spawnRate: Math.max(m.spawnRate - 0.02, 1.0),
+      spawnRate: Math.max(m.spawnRate - 0.02, 1.2),
       decaySpeed: Math.min(m.decaySpeed + 0.1, 2.0),
       growthSpeed: Math.max(m.growthSpeed - 0.15, 0.7),
       decoyProbability: Math.max(m.decoyProbability - 0.05, 0),
