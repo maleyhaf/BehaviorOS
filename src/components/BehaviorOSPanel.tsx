@@ -78,7 +78,7 @@ function CompactPanel({ player, modifiers, adaptationLog, timeElapsed, hp }: Omi
       backdropFilter: 'blur(8px)',
     }}>
       {/* Trait pills + time */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: lastEntry ? 8 : 0 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: visibleEntry ? 8 : 0 }}>
         {traits.map(t => (
           <div key={t.label} style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
             <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.3)' }}>{t.label}</span>

@@ -101,7 +101,7 @@ const RULES: Rule[] = [
     },
     trigger: 'performance > escalating threshold (0.55 → 0.65 → 0.75 → 0.85)',
     description: 'Overall difficulty surge — you perform well, so the system is testing you harder',
-    apply: (m, p) => {
+    apply: (m, _p) => {
       //const fireCount = ruleFiredCounts.get('performance_surge') ?? 0
       //const threshold = Math.min(0.55 + fireCount * 0.10, 0.85)
       //const threshold = 0.60
