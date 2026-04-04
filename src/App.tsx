@@ -87,11 +87,11 @@ export default function App() {
             </div>
           )}
 
-          <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: 13, marginBottom: 8 }}>
+          <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: 14, marginBottom: 8 }}>
             Tap shapes to score. Survive as long as possible.
           </div>
-          <div style={{ color: 'rgba(255,255,255,0.25)', fontSize: 12, marginBottom: 24 }}>
-            Missing large shapes drains HP. Tapping decoys drains more. Tap at peak size to recover HP.
+          <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: 13, marginBottom: 24 }}>
+            Missing large shapes drains HP. Tapping decoys (dotted shapes) drains more. Tap at peak size to recover HP.
             {storedProfile ? ' The system remembers you.' : ' The system is watching.'}
           </div>
 
