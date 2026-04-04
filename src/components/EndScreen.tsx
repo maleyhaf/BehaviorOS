@@ -110,6 +110,21 @@ export function EndScreen({ report, onRestart, onReset, sessionsPlayed }: Props)
         {adaptationLog.length > 0 && (
           <div style={{ marginBottom: 24 }}>
             <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', marginBottom: 12, letterSpacing: '0.08em' }}>SYSTEM RESPONSE HISTORY</div>
+
+            {logExpanded && (
+              <button
+                onClick={() => setLogExpanded(false)}
+                style={{
+                  background: 'transparent', border: 'none', cursor: 'pointer',
+                  color: 'rgba(255,255,255,0.35)', fontSize: 11, fontFamily: 'monospace',
+                  padding: '6px 0', marginBottom: 6, display: 'flex', alignItems: 'center', gap: 6,
+                }}
+              >
+                <span style={{ display: 'inline-block', transform: 'rotate(180deg)' }}>▼</span>
+                show less
+              </button>
+            )}
+
             {(logExpanded ? adaptationLog : adaptationLog.slice(0, PREVIEW_COUNT)).map((entry, i) => (
               <div key={i} style={{
                 padding: '8px 12px', marginBottom: 6,
@@ -121,17 +136,18 @@ export function EndScreen({ report, onRestart, onReset, sessionsPlayed }: Props)
                 <div style={{ color: 'rgba(255,255,255,0.6)' }}>{entry.description}</div>
               </div>
             ))}
-            {adaptationLog.length > PREVIEW_COUNT && (
+
+            {adaptationLog.length > PREVIEW_COUNT && !logExpanded && (
               <button
-                onClick={() => setLogExpanded(e => !e)}
+                onClick={() => setLogExpanded(true)}
                 style={{
                   background: 'transparent', border: 'none', cursor: 'pointer',
                   color: 'rgba(255,255,255,0.35)', fontSize: 11, fontFamily: 'monospace',
                   padding: '6px 0', display: 'flex', alignItems: 'center', gap: 6,
                 }}
               >
-                <span style={{ display: 'inline-block', transition: 'transform 0.2s', transform: logExpanded ? 'rotate(180deg)' : 'none' }}>▼</span>
-                {logExpanded ? 'show less' : `${adaptationLog.length - PREVIEW_COUNT} more adaptation${adaptationLog.length - PREVIEW_COUNT !== 1 ? 's' : ''}`}
+                <span style={{ display: 'inline-block' }}>▼</span>
+                {`${adaptationLog.length - PREVIEW_COUNT} more adaptation${adaptationLog.length - PREVIEW_COUNT !== 1 ? 's' : ''}`}
               </button>
             )}
           </div>

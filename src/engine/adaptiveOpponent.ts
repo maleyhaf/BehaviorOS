@@ -93,16 +93,28 @@ const RULES: Rule[] = [
   },
   {
     id: 'performance_surge',
-    condition: p => p.performance > 0.55 && p.totalClicks > 10,
-    trigger: 'performance > 0.50',
-    description: 'Overall difficulty surge — you perform well, so the system is testing you',
-    apply: (m, p) => ({
-      spawnRate: Math.max(m.spawnRate + 0.08 * (p.performance - 0.6), 5),
-      decaySpeed: Math.max(m.decaySpeed - 0.1, 0.4),
-      growthSpeed: Math.min(m.growthSpeed + 0.2, 5),
-      decoyProbability: Math.min(m.decoyProbability + 0.1, 0.5),
-      rewardScaling: Math.max(m.rewardScaling - 0.1, 0.5),
-    }),
+    condition: p => {
+      const fireCount = ruleFiredCounts.get('performance_surge') ?? 0
+      //Threshold escalates: 0.55, 0.65, 0.75, 0.85, then caps at 0.85
+      const threshold = Math.min(0.55 + fireCount * 0.10, 0.85)
+      return p.performance > threshold && p.totalClicks > 20
+    },
+    trigger: 'performance > escalating threshold (0.55 → 0.65 → 0.75 → 0.85)',
+    description: 'Overall difficulty surge — you perform well, so the system is testing you harder',
+    apply: (m, p) => {
+      //const fireCount = ruleFiredCounts.get('performance_surge') ?? 0
+      //const threshold = Math.min(0.55 + fireCount * 0.10, 0.85)
+      //const threshold = 0.60
+      //const intensity = Math.max(0, (p.performance - threshold) / (1 - threshold))
+      return {
+        spawnRate: Math.min(m.spawnRate + 0.2, 4.0),
+        decaySpeed: Math.max(m.decaySpeed - 0.08, 0.5),
+        growthSpeed: Math.min(m.growthSpeed + 0.15, 2.5),
+        driftSpeed: Math.min(m.driftSpeed + 20, 150),
+        decoyProbability: Math.min(m.decoyProbability + 0.08 , 0.4),
+        rewardScaling: Math.max(m.rewardScaling - 0.08 , 0.6),
+      }
+    },
   },
   {
     id: 'performance_relief',
@@ -120,6 +132,7 @@ const RULES: Rule[] = [
 ]
 
 const firedRules = new Set<string>()
+const ruleFiredCounts = new Map<string, number>()
 
 export function adapt(
   player: PlayerState,
@@ -135,13 +148,13 @@ export function adapt(
       modifiers = { ...modifiers, ...delta }
 
       firedRules.add(rule.id)
+      ruleFiredCounts.set(rule.id, (ruleFiredCounts.get(rule.id) ?? 0) + 1)
       newLog.push({
         timestamp: Date.now(),
         trigger: rule.trigger,
         change: delta,
         description: rule.description,
       })
-
     }
   }
 
@@ -150,4 +163,5 @@ export function adapt(
 
 export function resetAdaptation() {
   firedRules.clear()
+  ruleFiredCounts.clear()
 }

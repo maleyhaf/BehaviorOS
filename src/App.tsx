@@ -109,15 +109,35 @@ export default function App() {
             </div>
           )}
 
-          <button onClick={start} style={{
-            background: '#4ade80', border: 'none', color: '#050a10',
-            padding: '14px 40px', borderRadius: 4, cursor: 'pointer',
-            fontFamily: 'monospace', fontWeight: 'bold',
-            fontSize: isMobile ? 16 : 14, letterSpacing: '0.08em',
-            width: isMobile ? '100%' : 'auto',
-          }}>
-            {storedProfile ? `BEGIN SESSION ${storedProfile.sessionsPlayed + 1}` : 'BEGIN SESSION'}
-          </button>
+          <div style={{ justifyContent: 'center', display: 'flex', flexDirection: 'column', gap: 10 }} >
+
+            <button onClick={start} style={{
+              background: '#4ade80', border: 'none', color: '#050a10',
+              padding: '14px 40px', borderRadius: 4, cursor: 'pointer',
+              fontFamily: 'monospace', fontWeight: 'bold',
+              fontSize: isMobile ? 16 : 14, letterSpacing: '0.08em',
+              width: isMobile ? '100%' : 'auto',
+            }}>
+              {storedProfile ? `BEGIN SESSION ${storedProfile.sessionsPlayed + 1}` : 'BEGIN SESSION'}
+            </button>
+
+            {storedProfile && (
+
+              <button onClick={reset} style={{
+                background: 'transparent',
+                border: `1px solid rgba(248,113,113,0.3)`,
+                color: 'white',
+                padding: '10px 32px', borderRadius: 4, cursor: 'pointer',
+                fontFamily: 'monospace', fontSize: 12, letterSpacing: '0.08em',
+                width: isMobile ? '50%' : '50%',
+                alignSelf: 'center',
+              }}>
+                {'RESET PROFILE'}
+              </button>
+            )}
+
+          </div>
+
         </div>
       )}
 

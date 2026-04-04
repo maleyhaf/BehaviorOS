@@ -1,5 +1,6 @@
 import type { PlayerState, GameModifiers, AdaptationEntry } from '../types'
 import { MAX_HP } from '../engine/shapeEngine'
+import { useState, useEffect } from 'react'
 
 interface Props {
   player: PlayerState
@@ -42,13 +43,23 @@ function Row({ label, value }: { label: string; value: string }) {
 function CompactPanel({ player, modifiers, adaptationLog, timeElapsed, hp }: Omit<Props, 'compact'>) {
   const hpPct = hp / MAX_HP
   const hpColor = hpPct > 0.6 ? '#4ade80' : hpPct > 0.3 ? '#facc15' : '#f87171'
-  const lastEntry = adaptationLog[adaptationLog.length - 1]
+
+
+  const [visibleEntry, setVisibleEntry] = useState<AdaptationEntry | null>(null)
+
+  useEffect(() => {
+    const latest = adaptationLog[adaptationLog.length - 1]
+    if (!latest) return
+    setVisibleEntry(latest)
+    const timer = setTimeout(() => setVisibleEntry(null), 2500)
+    return () => clearTimeout(timer)
+  }, [adaptationLog.length])  // fires when a new entry is added
 
   const traits = [
     { label: 'RISK', value: player.riskTolerance, color: '#f97316' },
     { label: 'IMPL', value: player.impulsivity, color: '#a78bfa' },
-    { label: 'PAT',  value: player.patience,    color: '#38bdf8' },
-    { label: 'CON',  value: player.consistency, color: '#4ade80' },
+    { label: 'PAT', value: player.patience, color: '#38bdf8' },
+    { label: 'CON', value: player.consistency, color: '#4ade80' },
     { label: 'PERF', value: player.performance, color: '#facc15' },
   ]
 
@@ -91,7 +102,7 @@ function CompactPanel({ player, modifiers, adaptationLog, timeElapsed, hp }: Omi
       </div>
 
       {/* Latest adaptation message */}
-      {lastEntry && (
+      {visibleEntry && (
         <div style={{
           fontSize: 10,
           color: 'rgba(250,204,21,0.7)',
@@ -99,7 +110,7 @@ function CompactPanel({ player, modifiers, adaptationLog, timeElapsed, hp }: Omi
           paddingTop: 6,
           lineHeight: 1.4,
         }}>
-          ↳ {lastEntry.description}
+          ↳ {visibleEntry.description}
         </div>
       )}
     </div>
@@ -110,7 +121,17 @@ function CompactPanel({ player, modifiers, adaptationLog, timeElapsed, hp }: Omi
 export function BehaviorOSPanel({ player, modifiers, adaptationLog, timeElapsed, hp, compact }: Props) {
   if (compact) return <CompactPanel player={player} modifiers={modifiers} adaptationLog={adaptationLog} timeElapsed={timeElapsed} hp={hp} />
 
-  const lastEntry = adaptationLog[adaptationLog.length - 1]
+
+  const [visibleEntry, setVisibleEntry] = useState<AdaptationEntry | null>(null)
+
+  useEffect(() => {
+    const latest = adaptationLog[adaptationLog.length - 1]
+    if (!latest) return
+    setVisibleEntry(latest)
+    const timer = setTimeout(() => setVisibleEntry(null), 2500)
+    return () => clearTimeout(timer)
+  }, [adaptationLog.length])  // fires when a new entry is added
+
   const hpPct = hp / MAX_HP
   const hpColor = hpPct > 0.6 ? '#4ade80' : hpPct > 0.3 ? '#facc15' : '#f87171'
   const lvl = (v: number) => v > 0.7 ? 'HIGH' : v > 0.4 ? 'MED' : 'LOW'
@@ -170,14 +191,14 @@ export function BehaviorOSPanel({ player, modifiers, adaptationLog, timeElapsed,
         <Row label="Decoy damage" value={`${modifiers.decoyDamageMultiplier.toFixed(1)}×`} />
       </div>
 
-      {lastEntry && (
+      {visibleEntry && (
         <div style={{
           background: 'rgba(250,204,21,0.08)',
           border: '1px solid rgba(250,204,21,0.2)',
           borderRadius: 4, padding: '6px 8px',
           fontSize: 10, color: 'rgba(250,204,21,0.8)', marginBottom: 10,
         }}>
-          ↳ {lastEntry.description}
+          ↳ {visibleEntry.description}
         </div>
       )}
 

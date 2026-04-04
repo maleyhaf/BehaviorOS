@@ -154,7 +154,7 @@ export function useGameEngine(canvasW: number, canvasH: number) {
           : Math.max(DEFAULT_MODIFIERS.decaySpeed - timeSec * 0.005, 0.4),
     }
     */
-    console.log(`performance: ${player.performance.toFixed(2)}, spawnRate: ${modifiers.spawnRate.toFixed(2)}, growthSpeed: ${modifiers.growthSpeed.toFixed(2)}, decaySpeed: ${modifiers.decaySpeed.toFixed(2)}`)
+    //console.log(`performance: ${player.performance.toFixed(2)}, spawnRate: ${modifiers.spawnRate.toFixed(2)}, growthSpeed: ${modifiers.growthSpeed.toFixed(2)}, decaySpeed: ${modifiers.decaySpeed.toFixed(2)}`)
 
     setGameState(s => ({
       ...s,
